@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+SCALA_VERSION=2.11
+AMMONITE_VERSION=1.1.0
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+INTERNAL=$SCRIPTDIR/../internal
+
+S=$(basename "$0")
+
+usage() {
+  cat <<EOF
+Usage: $S [Coursier arguments]
+
+Wrapper around coursier. Add suport for loading repositories and credentials
+from files.
+
+Envvars:
+
+COURSIERPLUSAUTH_CREDFILE
+    Alternative location for file containing credentials.
+    Default: ~/.coursier+auth/credfile.json
+
+COURSIERPLUSAUTH_REPOFILE
+    Alternative location for file listing repositories.
+    Default: First parent dir containing .coursier+/repofile.json
+
+COURSIERPLUSAUTH_NO_REMOTE_TRACKING
+    Disables Ammonite remote tracking.
+
+Additional commands:
+
+$S cred <set|get|rm> <ID>
+    Sets/prints/removes credentials with id ID.
+
+$S cred check
+    Validates repofile and checks if all needed credentials are available.
+EOF
+}
+
+(($# == 0)) && {
+  usage
+  exit 1
+}
+
+if [[ $1 == -h ]] || [[ $1 == --help ]]
+then
+  usage
+  echo
+  echo "Coursier help:"
+fi
+
+exec "$INTERNAL/fetch-n-run-amm.sh" "$SCALA_VERSION" "$AMMONITE_VERSION" \
+  --home "$SCRIPTDIR/../ammonite-home" \
+  --no-home-predef \
+  "$INTERNAL/coursierplusauth.sc" "$@"

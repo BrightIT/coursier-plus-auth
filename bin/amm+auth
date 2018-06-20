@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+INTERNAL=$SCRIPTDIR/../internal
+
+S=$(basename "$0")
+
+usage() {
+  cat <<EOF
+Usage: $S <Scala major version> <Ammonite version> [Ammonite options]
+
+Runs Ammonite with repositories loaded from a file.
+
+Note that $S works using a custom Ammonite home.
+
+Envvars:
+
+COURSIERPLUSAUTH_CREDFILE
+    Alternative location for file containing credentials.
+    Default: ~/.coursier+auth/credfile.json
+
+COURSIERPLUSAUTH_REPOFILE
+    Alternative location for file listing repositories.
+    Default: First parent dir containing .coursier+/repofile.json
+
+COURSIERPLUSAUTH_NO_REMOTE_TRACKING
+    Disables Ammonite remote tracking.
+EOF
+}
+
+scalav=$1
+shift
+ammv=$1
+shift
+
+if [[ -z $scalav ]] || [[ -z $ammv ]]
+then
+  usage
+  exit 1
+fi
+
+exec "$INTERNAL/fetch-n-run-amm.sh" "$scalav" "$ammv" \
+  --home "$SCRIPTDIR/../ammonite-home" \
+  "$@"
